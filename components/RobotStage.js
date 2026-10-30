@@ -121,7 +121,8 @@ export default function RobotStage() {
         const n = stages.length;
 
         const rawP = stagePosition(tops, window.scrollY);
-        sp += (rawP - sp) * (reduce ? 1 : 0.08);
+        const k60 = (k) => (reduce ? 1 : 1 - Math.pow(1 - k, dt * 60)); // frame-rate independent smoothing
+        sp += (rawP - sp) * k60(0.08);
         if (window.innerWidth < 900) applyView();
 
         const i0 = Math.min(Math.floor(sp), n - 1);
@@ -131,8 +132,8 @@ export default function RobotStage() {
         face.setMode(stages[clamp(Math.floor(sp + 0.45), 0, n - 1)].face);
         face.update(t, dt, !reduce);
 
-        ptr.sx += (ptr.x - ptr.sx) * (reduce ? 1 : 0.06);
-        ptr.sy += (ptr.y - ptr.sy) * (reduce ? 1 : 0.06);
+        ptr.sx += (ptr.x - ptr.sx) * k60(0.06);
+        ptr.sy += (ptr.y - ptr.sy) * k60(0.06);
 
         const zMul = window.innerWidth < 900 ? 1.25 : 1;
         camera.position.set(ptr.sx * 0.25, pose.y - ptr.sy * 0.1, pose.z * zMul);

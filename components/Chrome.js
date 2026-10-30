@@ -1,9 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { LiquidNavbar, NimbusIcons } from "@/components/ui/liquid-glass-navbar";
 import { NAV, STAGES, stagePosition, sectionTops } from "@/lib/poses";
 
-const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const I = (d) => (
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {d}
+  </svg>
+);
+const ICONS = {
+  skills: I(<><path d="m8.5 8-4.5 4 4.5 4" /><path d="m15.5 8 4.5 4-4.5 4" /><path d="m13.5 5.5-3 13" /></>),
+  contact: NimbusIcons.plane,
+};
+const NAV_ITEMS = [
+  { label: "Home", href: "#home", icon: NimbusIcons.home, fx: "glow" },
+  { label: "Skills & Projects", href: "#skills", icon: ICONS.skills, fx: "pop" },
+  { label: "About", href: "#about", icon: NimbusIcons.user, fx: "wave" },
+  { label: "Contact", href: "#contact", icon: ICONS.contact, fx: "plane" },
+];
 
 function LogoMark() {
   return (
@@ -15,34 +30,32 @@ function LogoMark() {
           <stop offset="1" stopColor="#5a3dff" />
         </linearGradient>
       </defs>
-      <path
-        d="M21.5 4.5H9A5.5 5.5 0 0 0 3.5 10v7A5.5 5.5 0 0 0 9 22.5h12.5"
-        stroke="url(#lg)"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+      <path d="M21.5 4.5H9A5.5 5.5 0 0 0 3.5 10v7A5.5 5.5 0 0 0 9 22.5h12.5" stroke="url(#lg)" strokeWidth="2" strokeLinecap="round" />
       <circle cx="10" cy="13.5" r="1.7" fill="currentColor" />
       <circle cx="16.5" cy="13.5" r="1.7" fill="currentColor" />
     </svg>
   );
 }
 
-/** Top bar, nav, right rail and the full-screen menu. */
+/** Liquid-glass nav pill, theme toggle, right rail and scroll progress. */
 export default function Chrome() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [barClosed, setBarClosed] = useState(false);
   const [sec, setSec] = useState(0);
+  const [lock, setLock] = useState(null);
+  const [theme, setTheme] = useState("light");
   const topsRef = useRef([]);
   const progRef = useRef(null);
-  const [theme, setTheme] = useState("light");
-  const firstLink = useRef(null);
+  const lockTimer = useRef(0);
 
   useEffect(() => {
     setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
   }, []);
+
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
+    const root = document.documentElement;
+    root.classList.add("theme-anim"); // lets every colour fade instead of snapping
+    root.dataset.theme = next;
+    setTimeout(() => root.classList.remove("theme-anim"), 700);
     try {
       localStorage.setItem("theme", next);
     } catch {}
@@ -50,29 +63,22 @@ export default function Chrome() {
   };
 
   useEffect(() => {
-    document.documentElement.classList.toggle("bar-closed", barClosed);
-  }, [barClosed]);
-
-  useEffect(() => {
     const measure = () => (topsRef.current = sectionTops());
     const onScroll = () => {
       const y = window.scrollY;
-      document.documentElement.classList.toggle("is-scrolled", y > 40);
       const max = document.documentElement.scrollHeight - window.innerHeight;
       progRef.current?.style.setProperty("--prog", max > 0 ? String(Math.min(1, y / max)) : "0");
-      // a section is "current" once it is more than half visible
-      const pos = stagePosition(topsRef.current, y + window.innerHeight * 0.0);
+      const pos = stagePosition(topsRef.current, y);
       setSec(Math.min(STAGES.length - 1, Math.round(pos)));
     };
     const onResize = () => {
       measure();
       onScroll();
     };
-    measure();
-    onScroll();
+    onResize();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onResize);
-    const t = setTimeout(onResize, 600); // after fonts/layout settle
+    const t = setTimeout(onResize, 600);
     return () => {
       clearTimeout(t);
       window.removeEventListener("scroll", onScroll);
@@ -80,46 +86,38 @@ export default function Chrome() {
     };
   }, []);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("menu-open", menuOpen);
-    if (!menuOpen) return;
-    firstLink.current?.focus();
-    const onKey = (e) => e.key === "Escape" && setMenuOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
-
   const stage = STAGES[sec];
+  const scrollActive = Math.max(0, NAV.findIndex((n) => n.ids.includes(stage.id)));
+  const active = lock ?? scrollActive;
   const activeDot = Math.round((stage.railPos / 62) * 13);
-  const isActive = (item) => item.ids.includes(stage.id);
+
+  // while a click-scroll is travelling, keep the water drop on the target item
+  const onNavChange = (i) => {
+    setLock(i);
+    clearTimeout(lockTimer.current);
+    lockTimer.current = setTimeout(() => setLock(null), 1900);
+  };
 
   return (
     <>
       <div className="progress" ref={progRef} aria-hidden="true" />
-      <div className="topbar">
-        <a href="#about">
-          <b>Now:</b> First-year B.Voc in AI &amp; Data Science · 2026–2029 ↗
-        </a>
-        <button type="button" className="topbar-x" aria-label="Dismiss announcement" onClick={() => setBarClosed(true)}>
-          ×
-        </button>
-      </div>
 
       <header className="nav">
         <a href="#home" className="logo" aria-label="Ali Mapari, home">
           <LogoMark />
           <span>ALI MAPARI</span>
         </a>
-        <nav className="menu" aria-label="Primary">
-          {NAV.map((item) => (
-            <a key={item.href} href={item.href} aria-current={isActive(item) ? "page" : undefined}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <a href="#projects" className="pad">
-          Projects ↗
-        </a>
+
+        <div className="nav-pill">
+          <LiquidNavbar
+            items={NAV_ITEMS}
+            active={active}
+            onChange={onNavChange}
+            tone={theme === "dark" ? "dark" : "light"}
+            style={{ "--n-fg": "var(--ink)", "--n-fg-soft": "var(--dim)" }}
+          />
+        </div>
+
         <div className="nav-end">
           <button
             type="button"
@@ -136,18 +134,6 @@ export default function Chrome() {
             <svg className="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z" />
             </svg>
-          </button>
-          <a href="#contact" className="btn desk-only">
-            <span aria-hidden="true">••</span> Get in touch
-          </a>
-          <button
-            type="button"
-            className="btn mob-only"
-            aria-expanded={menuOpen}
-            aria-controls="site-menu"
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            <span aria-hidden="true">≡</span> {menuOpen ? "Close" : "Menu"}
           </button>
         </div>
       </header>
@@ -167,23 +153,6 @@ export default function Chrome() {
           </div>
         </div>
       </aside>
-      <button type="button" className="rail-menu" onClick={() => setMenuOpen(true)} aria-label="Open menu">
-        ≡ Menu
-      </button>
-
-      <div id="site-menu" className="overlay" inert={!menuOpen} data-open={menuOpen}>
-        <nav aria-label="Site menu">
-          {NAV.map((item, i) => (
-            <a key={item.href} href={item.href} ref={i === 0 ? firstLink : undefined} onClick={() => setMenuOpen(false)}>
-              <small>0{i + 1}</small>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <button type="button" className="overlay-x" onClick={() => setMenuOpen(false)}>
-          × Close
-        </button>
-      </div>
     </>
   );
 }

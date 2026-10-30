@@ -2,12 +2,14 @@ import "@fontsource/ibm-plex-mono/latin-300.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "@fontsource/ibm-plex-mono/latin-500.css";
 import "@fontsource-variable/schibsted-grotesk/wght.css";
+import "lenis/dist/lenis.css";
 import "./globals.css";
 import "./pages.css";
 
 import RobotStage from "@/components/RobotStage";
 import Chrome from "@/components/Chrome";
 import Reveal from "@/components/Reveal";
+import SmoothScroll from "@/components/SmoothScroll";
 import { site } from "@/lib/site";
 
 export const metadata = {
@@ -54,6 +56,7 @@ export default function RootLayout({ children }) {
         <RobotStage />
         <Chrome />
         <Reveal />
+        <SmoothScroll />
         <main id="main">{children}</main>
         <noscript>
           <style>{`.rv,.card[data-card]{opacity:1!important;transform:none!important}`}</style>
