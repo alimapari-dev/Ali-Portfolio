@@ -1,4 +1,4 @@
-import { FaEnvelope, FaGithub, FaLinkedinIn, FaPhone, FaWhatsapp } from "react-icons/fa6";
+import { FaEnvelope, FaGithub, FaLinkedinIn, FaLocationDot, FaPhone, FaWhatsapp } from "react-icons/fa6";
 
 const map = {
   email: FaEnvelope,
@@ -6,6 +6,7 @@ const map = {
   linkedin: FaLinkedinIn,
   whatsapp: FaWhatsapp,
   phone: FaPhone,
+  location: FaLocationDot,
 };
 
 export default function ContactIcon({ id }) {

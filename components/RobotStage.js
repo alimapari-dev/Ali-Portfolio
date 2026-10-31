@@ -6,7 +6,9 @@ import { POSES, STAGES, stagePosition, sectionTops, sectionHolds } from "@/lib/p
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-const KEYS = ["z", "y", "look", "body", "hy", "hp", "hr", "ml"];
+const KEYS = ["z", "y", "look", "body", "hy", "hp", "hr", "ml", "sx"];
+const RING_Y = 0.95; // height (world units) of the point the skills ring is centred on
+const MID_Y = 0.3; // height of the robot's visual middle (head top to feet), used to level the skills details with him
 const spring = (v0 = 0) => ({ x: v0, v: 0 });
 /** Slightly under-damped spring: follows its target smoothly, with a touch of life. */
 const stepSpring = (sp, target, dt, k = 110, d = 15) => {
@@ -101,11 +103,13 @@ export default function RobotStage() {
         applyView();
       };
       // On phones the content sits in the lower half, so lift the robot up the screen (`ml` = fraction of the height).
-      const applyView = (lift = 0.2) => {
+      // On desktop `sx` slides him to the right (fraction of the width), e.g. beside the skills text.
+      const applyView = (lift = 0.2, shift = 0) => {
         const w = window.innerWidth;
         const h = window.innerHeight;
         const offY = w < 900 ? h * lift : 0;
-        if (offY) camera.setViewOffset(w, h, 0, offY, w, h);
+        const offX = w >= 900 ? -w * shift : 0;
+        if (offY || offX) camera.setViewOffset(w, h, offX, offY, w, h);
         else camera.clearViewOffset();
         camera.updateProjectionMatrix();
       };
@@ -153,6 +157,9 @@ export default function RobotStage() {
       const eyeY = spring(0);
       const wander = { x: 0, y: 0, until: 0 };
       const headAt = new THREE.Vector3();
+      const ringAt = new THREE.Vector3();
+      const ringPx = new THREE.Vector3();
+      const midAt = new THREE.Vector3();
 
       /* scroll-driven pose */
       let tops = sectionTops();
@@ -194,7 +201,7 @@ export default function RobotStage() {
         }
         face.setMode(override || baseFace);
 
-        applyView(pose.ml);
+        applyView(pose.ml, pose.sx);
         const zMul = window.innerWidth < 900 ? 1.25 : 1;
         const w = window.innerWidth;
         const h = window.innerHeight;
@@ -246,6 +253,20 @@ export default function RobotStage() {
         camera.position.set(P.sx * 0.25 * par, pose.y - P.sy * 0.1 * par, pose.z * zMul);
         camera.lookAt(0, pose.look, 0);
 
+        /* where the robot's body axis is on screen (the skills ring orbits this point) and how big one world unit is */
+        camera.updateMatrixWorld();
+        ringAt.set(0, RING_Y, 0).project(camera);
+        ringPx.set(1, RING_Y, 0).project(camera);
+        midAt.set(0, MID_Y, 0).project(camera);
+        if (Number.isFinite(ringAt.x) && Number.isFinite(ringAt.y) && Number.isFinite(midAt.y)) {
+          window.__robotRing = {
+            x: (ringAt.x * 0.5 + 0.5) * w,
+            y: (-ringAt.y * 0.5 + 0.5) * h,
+            midY: (-midAt.y * 0.5 + 0.5) * h,
+            ppu: Math.abs(ringPx.x - ringAt.x) * 0.5 * w,
+          };
+        }
+
         const idle = reduce ? 0 : 1;
         robot.rotation.y = bodyYaw.x;
         robot.position.y = Math.sin(t * 1.4) * 0.02 * idle + bump.x * 0.07;
@@ -279,6 +300,7 @@ export default function RobotStage() {
         pmrem.dispose();
         renderer.dispose();
         document.documentElement.classList.remove("robot-ready");
+        delete window.__robotRing;
       };
     })();
 

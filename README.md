@@ -24,23 +24,32 @@ npm start
 
 Requires Node 20.9 or newer.
 
-## 1. Add your contact details (do this first)
+## 1. Your contact details
 
-Open **`lib/site.js`** and fill in the `contact` object:
+They are already filled in, in **`lib/site.js`**:
 
 ```js
 export const contact = {
-  email: "you@example.com",
-  github: "https://github.com/your-username",
-  linkedin: "https://www.linkedin.com/in/your-handle",
-  phone: "+91 90000 00000",
-  whatsapp: "+91 90000 00000", // or a full https://wa.me/... link
+  email: "alimapari12345@gmail.com",
+  github: "https://github.com/alimapari-dev",
+  linkedin: "https://www.linkedin.com/in/alimapari",
+  phone: "+91 75065 65137",
+  whatsapp: "+91 75065 65137", // or a full https://wa.me/... link
+  location: "Mumbai",
+  locationUrl: "https://maps.app.goo.gl/7mJNhztLnREzzQeMA",
 };
 ```
 
-Anything left as `""` shows as **"To be added"** and is not clickable, so no broken
-links are published. Filled values become live links automatically
-(`mailto:`, `tel:`, `https://wa.me/…`).
+The Contact section shows **six separate boxes**, each one a link with its own icon and an arrow:
+Location ("Located in Mumbai", opens Google Maps in a new tab, with a pulsing arrow so visitors see
+it is a map link), Email (`mailto:`), Call (`tel:`), WhatsApp (`https://wa.me/…`), LinkedIn and GitHub.
+The phone number was given without a country code, so `+91` (India) is used for the call and WhatsApp
+links. Change `phone` / `whatsapp` if that is not right. The footer icons and its "Connect" column read
+the same values.
+
+Anything set to `""` shows as **"To be added"** and is not clickable, so no broken links are published.
+The box styles are `.cbox` in `app/pages.css`; the boxes shrink their text to keep email and profile
+links on one line, and the arrow moves to the top-right corner on narrower laptop screens.
 
 ## 2. Edit content
 
@@ -51,15 +60,25 @@ so add them once they are verified.
 
 ### Skills ring
 
-The Skills section is a free-floating ring of glass cards that orbits the robot, who stands in the
-middle of the screen (`components/SkillsRing.js`). Cards on the far side of the ring pass *behind* the
-robot, cards on the near side pass in front. No orbit line is drawn, and the ring's tilt keeps drifting,
-leans towards the cursor and follows drags. Drag it, use the ← / → buttons or arrow keys, or pause it;
-hovering a card opens it with a short description, and clicking pins it open beside the robot.
-The section stays pinned on screen for a while (`data-pin`) before the page moves on.
-The cards (HTML, CSS & Tailwind CSS, JavaScript, Python, Git & GitHub, Figma, Software Project
-Management) are defined in `skillCards` in `lib/content.js`; their icons live in `public/skills/`
-(open-source Devicon SVGs, plus a simple project-management icon).
+In the Skills section the robot moves to the right side of the screen (centred on phones) and a small ring of
+glass cards orbits him (`components/SkillsRing.js`). The ring is centred on wherever the robot is on screen and sized
+from the robot, so the cards stay close to him; cards on the far side pass *behind* him, cards on the near side
+in front. No orbit line is drawn, and the ring's tilt keeps drifting, leans towards the cursor and follows drags.
+There are no buttons: it is moved by hand only — drag it with the mouse or swipe it with a finger, and it keeps
+a little momentum.
+
+On the left, a deck of detail cards shuffles through every skill by itself (about every 3.8 s, with a thin
+progress line). It stays hidden until you actually reach the Skills section, then slides in from the left
+(the cards arrive one after another) and stays fixed in place, levelled with the robot: the deck and the
+"Also in my toolkit" line below it are centred on his middle. It slides out again when you scroll past.
+Hover a ring card and that skill's details come to the front straight away and the deck waits; on a touch screen,
+tap a card (the details stay for about 7 s). Hovering the deck also pauses it.
+
+Tuning: `RING_UNITS` (how far the cards sit from the robot) and `SHUFFLE_MS` at the top of `SkillsRing.js`,
+`RING_Y` / `MID_Y` in `RobotStage.js` (height the ring is centred on / the robot's middle that the deck is levelled with), the `skills` pose in `lib/poses.js` (`sx` = how far
+right the robot stands), and the `.sk-card` / `.sk-slide` rules in `app/pages.css` for sizes.
+The skills are defined in `skillCards` in `lib/content.js` (title, category, blurb, related chips); their icons live in
+`public/skills/` (open-source Devicon SVGs, plus a simple project-management icon).
 
 ### The robot reacts to you
 

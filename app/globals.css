@@ -134,5 +134,6 @@ html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
   html { scroll-behavior: auto; }
   .rv { opacity: 1; transform: none; }
   .sec.in .rv, .rail-label { transition: none; }
-  .caret, .scroll svg { animation: none !important; }
+  .caret, .scroll svg, .cbox.loc .go::after, .sk-prog { animation: none !important; }
+  .sk-slide { transition: opacity 0.2s linear; }
 }

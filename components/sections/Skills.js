@@ -3,7 +3,7 @@ import { skillCards, skillsAlso } from "@/lib/content";
 
 /**
  * The ring itself lives in two fixed layers (one behind the robot, one in front), so this section is mostly
- * scroll runway: the robot stays centred and the ring stays on screen while it is scrolled through (`data-pin`).
+ * scroll runway: the robot stands on the right with the ring around him, the details deck sits on the left, and they stay on screen while it is scrolled through (`data-pin`).
  */
 export default function Skills() {
   return (
