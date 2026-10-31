@@ -1,13 +1,11 @@
-import Corners from "@/components/Corners";
 import { aboutIntro, education, interests, direction, profile } from "@/lib/content";
 
 export function About() {
   return (
     <section id="about" className="sec" data-sec aria-labelledby="about-h">
-      <div className="sec-head rv d1">
-        <span className="tag mono"><Corners />About <b>03</b></span>
-        <span className="note mono">{profile.title}</span>
-      </div>
+      <h2 id="about-h" className="ptitle rv d2">
+        <span className="ob">About</span> <span className="l2">Ali Mapari</span>
+      </h2>
       <div className="lane l wide">
         <div data-card className="card prose">
           <h3 className="mono card-h">Introduction</h3>
@@ -31,11 +29,6 @@ export function About() {
           </ol>
         </div>
       </div>
-      <h2 id="about-h" className="ptitle rv d4">
-        <span className="dots mono" aria-hidden="true">··</span>
-        <span className="ob">About</span>
-        <span className="l2">Ali Mapari</span>
-      </h2>
     </section>
   );
 }
@@ -43,10 +36,9 @@ export function About() {
 export function Direction() {
   return (
     <section id="direction" className="sec" data-sec aria-label="Learning journey and direction">
-      <div className="sec-head rv d1">
-        <span className="tag mono"><Corners />Direction <b>04</b></span>
-        <span className="note mono">Learning journey</span>
-      </div>
+      <h2 className="ptitle rv d2">
+        <span className="ob">Direction</span> <span className="l2">Learning journey</span>
+      </h2>
       <div className="lane l wide">
         <div data-card className="card">
           <blockquote className="quote">{direction.quote}</blockquote>

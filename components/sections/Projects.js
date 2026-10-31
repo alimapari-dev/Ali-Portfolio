@@ -1,4 +1,3 @@
-import Corners from "@/components/Corners";
 import { projects } from "@/lib/content";
 
 const Chips = ({ items }) => (
@@ -48,10 +47,9 @@ function Project({ p }) {
 export default function Projects() {
   return (
     <section id="projects" className="sec" data-sec aria-label="Projects">
-      <div className="sec-head rv d1">
-        <span className="tag mono"><Corners />Projects <b>02</b></span>
-        <span className="note mono">Two projects · frontend and design</span>
-      </div>
+      <h2 className="ptitle rv d2">
+        <span className="ob">Projects</span> <span className="l2">Two builds</span>
+      </h2>
       <div className="lane l wide"><Project p={projects[0]} /></div>
       <div className="lane r wide"><Project p={projects[1]} /></div>
     </section>

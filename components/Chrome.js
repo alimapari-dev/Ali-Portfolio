@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LiquidNavbar, NimbusIcons } from "@/components/ui/liquid-glass-navbar";
-import { NAV, STAGES, stagePosition, sectionTops } from "@/lib/poses";
+import { NAV, STAGES, stagePosition, sectionTops, sectionHolds } from "@/lib/poses";
 
 const I = (d) => (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -43,6 +43,7 @@ export default function Chrome() {
   const [lock, setLock] = useState(null);
   const [theme, setTheme] = useState("light");
   const topsRef = useRef([]);
+  const holdsRef = useRef([]);
   const progRef = useRef(null);
   const lockTimer = useRef(0);
 
@@ -63,12 +64,15 @@ export default function Chrome() {
   };
 
   useEffect(() => {
-    const measure = () => (topsRef.current = sectionTops());
+    const measure = () => {
+      topsRef.current = sectionTops();
+      holdsRef.current = sectionHolds();
+    };
     const onScroll = () => {
       const y = window.scrollY;
       const max = document.documentElement.scrollHeight - window.innerHeight;
       progRef.current?.style.setProperty("--prog", max > 0 ? String(Math.min(1, y / max)) : "0");
-      const pos = stagePosition(topsRef.current, y);
+      const pos = stagePosition(topsRef.current, y, holdsRef.current);
       setSec(Math.min(STAGES.length - 1, Math.round(pos)));
     };
     const onResize = () => {

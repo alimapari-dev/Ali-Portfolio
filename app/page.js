@@ -5,6 +5,7 @@ import Projects from "@/components/sections/Projects";
 import { About, Direction } from "@/components/sections/About";
 import Contact from "@/components/sections/Contact";
 import { profile, heroPrompts, heroFocus } from "@/lib/content";
+import SiteFooter from "@/components/SiteFooter";
 
 function Home() {
   return (
@@ -55,6 +56,7 @@ export default function Page() {
       <About />
       <Direction />
       <Contact />
+      <SiteFooter />
     </>
   );
 }

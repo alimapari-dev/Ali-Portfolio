@@ -100,41 +100,84 @@ function makeRingTexture() {
 
 /* ───────────────────────── face screen ───────────────────────── */
 
-function drawFace(ctx, mode, blink) {
+const EYE_L = [196, 262];
+const EYE_R = [316, 252];
+
+/** Expressions the screen can show. `eyes` is the neutral one; the rest are used for idle / click reactions. */
+export const EXPRESSIONS = ["smile", "wink", "surprised", "curious", "heart", "sleepy"];
+
+function heart(ctx, x, y, s) {
+  ctx.beginPath();
+  ctx.moveTo(x, y + 0.9 * s);
+  ctx.bezierCurveTo(x - 1.5 * s, y - 0.1 * s, x - 1.0 * s, y - 1.2 * s, x, y - 0.45 * s);
+  ctx.bezierCurveTo(x + 1.0 * s, y - 1.2 * s, x + 1.5 * s, y - 0.1 * s, x, y + 0.9 * s);
+  ctx.fill();
+}
+
+function arc(ctx, x, y, r) {
+  ctx.beginPath();
+  ctx.arc(x, y, r, Math.PI * 1.12, Math.PI * 1.88);
+  ctx.stroke();
+}
+
+function oval(ctx, x, y, rx, ry) {
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx, Math.max(2, ry), 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/** gx / gy ∈ [-1, 1]: where the eyes look (towards the cursor). */
+function drawFace(ctx, mode, blink, gx = 0, gy = 0) {
   ctx.fillStyle = "#fff";
   ctx.strokeStyle = "#fff";
   ctx.shadowColor = "#5aa2ff";
   ctx.shadowBlur = 18;
+  ctx.lineWidth = 18;
+  ctx.lineCap = "round";
+  const ox = gx * 20;
+  const oy = gy * 15;
+  const [lx, ly] = [EYE_L[0] + ox, EYE_L[1] + oy];
+  const [rx, ry] = [EYE_R[0] + ox, EYE_R[1] + oy];
+
   if (mode === "eyes") {
     const sy = 1 - 0.9 * blink;
-    [
-      [196, 262],
-      [316, 252],
-    ].forEach(([x, y]) => {
-      ctx.beginPath();
-      ctx.ellipse(x, y, 30, 38 * sy, 0, 0, Math.PI * 2);
-      ctx.fill();
-    });
+    oval(ctx, lx, ly, 30, 38 * sy);
+    oval(ctx, rx, ry, 30, 38 * sy);
+  } else if (mode === "smile") {
+    arc(ctx, EYE_L[0] + ox * 0.4, 290 + oy * 0.4, 38);
+    arc(ctx, EYE_R[0] + ox * 0.4, 280 + oy * 0.4, 38);
+  } else if (mode === "wink") {
+    oval(ctx, lx, ly, 30, 38 * (1 - 0.9 * blink));
+    arc(ctx, EYE_R[0] + ox * 0.4, 280 + oy * 0.4, 38);
+  } else if (mode === "surprised") {
+    oval(ctx, lx, ly - 4, 36, 54);
+    oval(ctx, rx, ry - 4, 36, 54);
+  } else if (mode === "curious") {
+    oval(ctx, lx, ly + 6, 24, 30 * (1 - 0.9 * blink));
+    oval(ctx, rx, ry - 8, 34, 46 * (1 - 0.9 * blink));
+  } else if (mode === "heart") {
+    heart(ctx, EYE_L[0] + ox * 0.5, EYE_L[1] + 4 + oy * 0.5, 46);
+    heart(ctx, EYE_R[0] + ox * 0.5, EYE_R[1] + 4 + oy * 0.5, 46);
+  } else if (mode === "sleepy") {
+    // half-closed lids: flat ovals with a lid line
+    oval(ctx, lx, ly + 14, 30, 13);
+    oval(ctx, rx, ry + 14, 30, 13);
+    ctx.lineWidth = 10;
+    ctx.beginPath();
+    ctx.moveTo(lx - 34, ly + 2);
+    ctx.lineTo(lx + 34, ly + 2);
+    ctx.moveTo(rx - 34, ry + 2);
+    ctx.lineTo(rx + 34, ry + 2);
+    ctx.stroke();
   } else if (mode === "quote") {
     ctx.font = '900 560px "Arial Black", Arial, Helvetica, sans-serif';
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("“", 256, 400);
-  } else if (mode === "smile") {
-    ctx.lineWidth = 18;
-    ctx.lineCap = "round";
-    [
-      [196, 290],
-      [316, 280],
-    ].forEach(([x, y]) => {
-      ctx.beginPath();
-      ctx.arc(x, y, 38, Math.PI * 1.12, Math.PI * 1.88);
-      ctx.stroke();
-    });
   }
 }
 
-/** Canvas-backed face. `setMode` cross-fades; `update` handles blinking. */
+/** Canvas-backed face. `setMode` cross-fades; `setGaze` moves the eyes; `update` handles blinking. */
 export function createFace() {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = 512;
@@ -149,6 +192,10 @@ export function createFace() {
   let blinkT = -1;
   let nextBlink = 2.5;
   let dirty = true;
+  let gx = 0;
+  let gy = 0;
+  let drawnGx = 0;
+  let drawnGy = 0;
 
   const render = () => {
     ctx.globalAlpha = 1;
@@ -157,22 +204,35 @@ export function createFace() {
     ctx.fillRect(0, 0, 512, 512);
     if (mix < 1) {
       ctx.globalAlpha = 1 - mix;
-      drawFace(ctx, from, blink);
+      drawFace(ctx, from, blink, gx, gy);
     }
     ctx.globalAlpha = mix;
-    drawFace(ctx, to, blink);
+    drawFace(ctx, to, blink, gx, gy);
     ctx.globalAlpha = 1;
     texture.needsUpdate = true;
+    drawnGx = gx;
+    drawnGy = gy;
   };
 
   return {
     texture,
+    get mode() {
+      return to;
+    },
     setMode(m) {
       if (m === to) return;
       from = to;
       to = m;
       mix = 0;
       dirty = true;
+    },
+    setGaze(x, y) {
+      gx = x;
+      gy = y;
+      if (Math.abs(gx - drawnGx) > 0.012 || Math.abs(gy - drawnGy) > 0.012) dirty = true;
+    },
+    blinkNow() {
+      if (blinkT < 0) blinkT = 0;
     },
     update(t, dt, allowBlink = true) {
       let b = 0;
@@ -194,7 +254,7 @@ export function createFace() {
         dirty = true;
       }
       if (mix < 1) {
-        mix = Math.min(1, mix + 0.05);
+        mix = Math.min(1, mix + Math.min(1, dt * 6));
         dirty = true;
       }
       if (dirty) {

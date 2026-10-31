@@ -11,6 +11,7 @@
   --line: rgba(var(--ink-rgb), 0.13);
   --paper: rgba(var(--bg-rgb), 0.9);
   --glass: rgba(255, 255, 255, 0.58);
+  --glass-solid: rgba(246, 249, 255, 0.92);
   --glass-edge: rgba(var(--blue-rgb), 0.4);
   --col: 17%;
   --pad: clamp(24px, 6vw, 120px);
@@ -31,6 +32,7 @@
   --glow-rgb: 61, 123, 255;
   --line: rgba(var(--ink-rgb), 0.14);
   --glass: rgba(18, 30, 64, 0.42);
+  --glass-solid: rgba(10, 18, 42, 0.9);
   --glass-edge: rgba(var(--blue-rgb), 0.5);
   --grad: linear-gradient(120deg, #38c2ff, #5b95ff 55%, #8b6bff);
 }
@@ -65,7 +67,8 @@ ul, ol { list-style: none; }
 .grid i:nth-child(1) { left: var(--col); }
 .grid i:nth-child(2) { left: 50%; }
 .grid i:nth-child(3) { left: calc(100% - var(--col)); }
-.stage { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
+/* layers: grid 0 · skills drag area 4 · cards behind the robot 5 · robot 10 · page content 12 · cards in front 15 · rail 30 · nav 40 */
+.stage { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 10; pointer-events: none; }
 #main { position: relative; }
 .progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 70; background: var(--blue); transform-origin: 0 50%; transform: scaleX(var(--prog, 0)); box-shadow: 0 0 10px rgba(var(--glow-rgb), 0.9); }
 
@@ -78,6 +81,9 @@ ul, ol { list-style: none; }
 .logo { justify-self: start; display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; white-space: nowrap; color: var(--ink); }
 .logo-mark { color: var(--ink); }
 .nav-pill { justify-self: center; }
+.nav-pill .nimbus-nav { gap: 6px; }
+.nav-pill .nimbus-item { height: 36px; padding: 0 26px; gap: 9px; font-size: 14px; }
+@media (max-width: 520px) { .nav-pill .nimbus-item { padding: 0 14px; } }
 .nav-end { justify-self: end; display: flex; align-items: center; gap: 10px; }
 
 .btn {

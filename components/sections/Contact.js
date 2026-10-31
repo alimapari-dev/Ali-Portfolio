@@ -1,4 +1,3 @@
-import Corners from "@/components/Corners";
 import ContactIcon from "@/components/Icons";
 import { getContactLinks } from "@/lib/site";
 
@@ -36,22 +35,15 @@ export default function Contact() {
   const right = links.filter((l) => ["whatsapp", "phone"].includes(l.id));
   return (
     <section id="contact" className="sec contact" data-sec aria-labelledby="contact-h">
-      <div className="sec-head rv d1">
-        <span className="tag mono"><Corners />Contact <b>05</b></span>
-        <span className="note mono">Ali Mapari</span>
-      </div>
+      <h2 id="contact-h" className="ptitle rv d2">
+        <span className="ob">Contact</span> <span className="l2">Ali Mapari</span>
+      </h2>
       <div className="lane l wide">
         <ul data-card className="clist card">{left.map((l) => <Row key={l.id} link={l} />)}</ul>
       </div>
       <div className="lane r wide">
         <ul data-card className="clist card">{right.map((l) => <Row key={l.id} link={l} />)}</ul>
       </div>
-      <h2 id="contact-h" className="ptitle rv d4">
-        <span className="dots mono" aria-hidden="true">··</span>
-        <span className="ob">Contact</span>
-        <span className="l2">Ali Mapari</span>
-      </h2>
-      <p className="foot mono">Ali Mapari · 2026</p>
     </section>
   );
 }
